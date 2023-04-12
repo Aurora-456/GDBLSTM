@@ -33,6 +33,7 @@ class ResidualBlock(torch.nn.Module):
     out = self.relu(out)
     return out
 
+
 class GATGCNNet(torch.nn.Module):
   def __init__(self,embed_dim, num_layer, device, num_feature_xd=78,n_output=1, num_feature_xt=25,
               output_dim=128, dropout=0.2):
@@ -41,16 +42,14 @@ class GATGCNNet(torch.nn.Module):
     self.device = device
     self.num_layer = num_layer
     self.embed_dim = embed_dim
-    self.num_rblock = 4
+    self.num_rblock = 3
 
     # GAT+GCN
     self.n_output = n_output
-
-
     self.conv1 = GATConv(num_feature_xd, num_feature_xd, heads=10)
     self.conv2 = GCNConv(num_feature_xd * 10, num_feature_xd * 10 * 2 )
     self.conv3 = GCNConv(num_feature_xd*2*10, num_feature_xd*2*2*10)
-    self.rblock_xd = ResidualBlock(num_feature_xd * 2*2*10)
+    self.rblock_xd = ResidualBlock(num_feature_xd * 2 * 2 * 10)
     self.fc_g1 = torch.nn.Linear(num_feature_xd * 10 *2*2, 1500)
     self.fc_g2 = torch.nn.Linear(1500, output_dim)
     self.relu = nn.ReLU()
@@ -58,8 +57,8 @@ class GATGCNNet(torch.nn.Module):
 
     #protien sequence branch (LSTM)
     self.embedding_xt = nn.Embedding(num_feature_xt+1,embed_dim)
-
     self.LSTM_xt_1 = nn.LSTM(self.embed_dim,self.embed_dim,self.num_layer,batch_first = True,bidirectional=True)
+    self.rblock_xd = ResidualBlock(3120)
     self.fc_xt1 = nn.Linear(1000*256,1500)
     # 多加一层全连接层
     self.fc_xt2 = nn.Linear(1500, output_dim)
@@ -90,7 +89,8 @@ class GATGCNNet(torch.nn.Module):
     # LSTM layer
     embedded_xt = self.embedding_xt(target)
     LSTM_xt,(hidden,cell) = self.LSTM_xt_1(embedded_xt,(hidden,cell))
-    # conv_xt = self.conv_xt_1(embedded_xt)
+    # for i in range(self.num_rblock):
+    #   x = self.rblock_xd(x, edge_index)
     xt = LSTM_xt.contiguous().view(-1,1000*256)
     xt = self.fc_xt1(xt)
     xt = self.fc_xt2(xt)
@@ -111,8 +111,14 @@ class GATGCNNet(torch.nn.Module):
   def init_hidden(self, batch_size):
 
     hidden = torch.zeros(4,batch_size,self.embed_dim).to(self.device)
+
     cell = torch.zeros(4,batch_size,self.embed_dim).to(self.device)
+
     return hidden,cell
+
+
+
+
 
 
 
