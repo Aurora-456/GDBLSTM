@@ -1,10 +1,15 @@
 import argparse
+import numpy as np
+import pandas as pd
+import sys, os
+from random import shuffle
+import torch
 import torch.nn as nn
+
 from models.GATGCN import GATGCNNet
 from utils import *
-
-
 from torch_geometric.nn import GCNConv, GATConv, GINConv, global_add_pool
+
 
 # training function at each epoch
 def train(model, device, train_loader, optimizer, epoch, hidden, cell):
@@ -113,8 +118,8 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GDBLSTM")
 
-    parser.add_argument("--dataset", type=str, default='Metz',
-                        help="Dataset Name (davis,kiba,Metz)")
+    parser.add_argument("--dataset", type=str, default='davis',
+                        help="Dataset Name (davis,kiba,DTC,STITCH，ToxCast,Metz)")
 
     parser.add_argument("--epoch",
                         type=int,
@@ -124,12 +129,12 @@ if __name__ == "__main__":
 
     parser.add_argument("--lr",
                         type=float,
-                        default=0.001,
+                        default=0.0005,
                         help="learning rate",
                         )
 
     parser.add_argument("--batch_size", type=int,
-                        default=256,
+                        default=512,
                         help="Number of drug-tareget per batch. Default is 128 for davis.")  # batch 128 for Davis
 
     parser.add_argument("--save_file", type=str,
