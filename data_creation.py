@@ -8,8 +8,6 @@ from rdkit.Chem import MolFromSmiles
 import networkx as nx
 from utils import *
 
-
-
 def atom_features(atom):
 
     return np.array(one_of_k_encoding_unk(atom.GetSymbol(),['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na','Ca', 'Fe', 'As', 'Al', 'I', 'B', 'V', 'K', 'Tl', 'Yb','Sb', 'Sn', 'Ag', 'Pd', 'Co', 'Se', 'Ti', 'Zn', 'H','Li', 'Ge', 'Cu', 'Au', 'Ni', 'Cd', 'In', 'Mn', 'Zr','Cr', 'Pt', 'Hg', 'Pb', 'Unknown']) +
@@ -108,8 +106,9 @@ def main(args):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Creation of dataset")
-  parser.add_argument("--dataset",type=str,default='Metz',help="Dataset Name (davis,kiba,Metz)")
+  parser.add_argument("--dataset",type=str,default='allergy',help="Dataset Name (davis,kiba,Metz,STITICH,ToxCast,DTC)")
   args = parser.parse_args()
   print(args)
   main(args)
+
 
