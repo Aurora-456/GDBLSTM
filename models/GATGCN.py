@@ -36,13 +36,14 @@ class ResidualBlock(torch.nn.Module):
 
 class GATGCNNet(torch.nn.Module):
   def __init__(self,embed_dim, num_layer, device, num_feature_xd=78,n_output=1, num_feature_xt=25,
-              output_dim=128, dropout=0.2):
+              output_dim=128, dropout=0.2,n_filters= 32):
     super(GATGCNNet,self).__init__()
 
     self.device = device
     self.num_layer = num_layer
     self.embed_dim = embed_dim
     self.num_rblock = 3
+
 
     # GAT+GCN
     self.n_output = n_output
@@ -55,10 +56,12 @@ class GATGCNNet(torch.nn.Module):
     self.relu = nn.ReLU()
     self.dropout = nn.Dropout(dropout)
 
-    #protien sequence branch (LSTM)
+    #protien sequence branch ( CNN + LSTM)
+    # self.conv4 =  nn.Sequential(nn.Conv1d(in_channels=in_channels, out_channels=out_channels,
+    #                                       kernel_size=3),nn.ReLU(),nn.MaxPool1d(kernel_size=3, stride=1)
     self.embedding_xt = nn.Embedding(num_feature_xt+1,embed_dim)
     self.LSTM_xt_1 = nn.LSTM(self.embed_dim,self.embed_dim,self.num_layer,batch_first = True,bidirectional=True)
-    self.rblock_xd = ResidualBlock(3120)
+    self.conv_xt_1 = nn.Conv1d(in_channels=3120, out_channels=n_filters, kernel_size=8)
     self.fc_xt1 = nn.Linear(1000*256,1500)
     # 多加一层全连接层
     self.fc_xt2 = nn.Linear(1500, output_dim)
@@ -92,6 +95,7 @@ class GATGCNNet(torch.nn.Module):
     # for i in range(self.num_rblock):
     #   x = self.rblock_xd(x, edge_index)
     xt = LSTM_xt.contiguous().view(-1,1000*256)
+    xt = self.conv_xt(xt)
     xt = self.fc_xt1(xt)
     xt = self.fc_xt2(xt)
 
@@ -115,10 +119,6 @@ class GATGCNNet(torch.nn.Module):
     cell = torch.zeros(4,batch_size,self.embed_dim).to(self.device)
 
     return hidden,cell
-
-
-
-
 
 
 
